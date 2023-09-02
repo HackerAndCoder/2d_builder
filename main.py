@@ -133,12 +133,12 @@ def save_game(world : World, name : str):
     global camera_offset
     save = f'{camera_offset[0]},{camera_offset[1]}\n'
     save += world.get_save()
-    with open(name + '.mc', 'w') as f:
+    with open(name + '.dat', 'w') as f:
         f.write(save)
 
 def load_save(world : World, name : str):
     global camera_offset
-    with open(name + '.mc') as f:
+    with open(name + '.dat') as f:
         player_info = f.readline().strip().split(',')
         save = f.read()
     
