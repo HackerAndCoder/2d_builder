@@ -36,7 +36,7 @@ class Screens:
 current_screen = Screens.ingame
 
 def get_texture(name):
-    return pygame.transform.scale(pygame.image.load(name + '.png').convert_alpha(), (block_screen_size, block_screen_size))
+    return pygame.transform.scale(pygame.image.load(os.path.join('assets', name + '.png')).convert_alpha(), (block_screen_size, block_screen_size))
 
 def key_to_screen(key):
     return (key[0]*block_screen_size, key[1]*block_screen_size)
@@ -278,7 +278,13 @@ while True:
                 if event.key in (Keybinds.move_left, pygame.K_LEFT): block_select_pos[0] -= 1
                 if event.key in (Keybinds.move_down, pygame.K_DOWN): block_select_pos[1] += 1
                 if event.key in (Keybinds.move_right, pygame.K_RIGHT): block_select_pos[0] += 1
-                check_block_select(6)
+
+                check_block_select(max_size=6)
+            
+            if current_screen == Screens.ingame:
+                if event.key == pygame.K_r:
+                    camera_offset = [0, -10]
+        
         
         elif event.type == pygame.MOUSEBUTTONUP:
             if current_screen == Screens.block_select:
