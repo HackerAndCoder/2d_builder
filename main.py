@@ -36,7 +36,7 @@ class Screens:
 current_screen = Screens.ingame
 
 def get_texture(name):
-    return pygame.transform.scale(pygame.image.load(os.path.join('assets', name + '.png')).convert_alpha(), (block_screen_size, block_screen_size))
+    return pygame.transform.scale(pygame.image.load(name + '.png').convert_alpha(), (block_screen_size, block_screen_size))
 
 def key_to_screen(key):
     return (key[0]*block_screen_size, key[1]*block_screen_size)
