@@ -17,6 +17,6 @@ B : open/close block select menu
 
 R : Go to world spawn
 
-Left click : Break block/Select block from block select menu
+Left click / Q: Break block/Select block from block select menu
 
-Right click : Place block
+Right click / E: Place block
