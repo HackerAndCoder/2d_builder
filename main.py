@@ -19,13 +19,15 @@ screen_dimensions_block = (width // block_screen_size, height // block_screen_si
 
 game_font = pygame.font.Font(None, 16)
 
+
+
 class Keybinds:
     move_up = pygame.K_w
     move_down = pygame.K_s 
     move_left = pygame.K_a 
     move_right = pygame.K_d 
-    remove = 1 # 1 is the left mouse button
-    place = 3 # right mouse buttong,  TODO maybe add option for keys 
+    remove = pygame.K_q # for both place and remove, you can remap the keyboard keys but mouse buttons 1 and 3 will always break and place without modifying the code
+    place = pygame.K_e 
 
 class Screens:
     ingame = 0
@@ -199,6 +201,12 @@ def render_world(world, events, do_move = True):
                 elif event.button == Keybinds.place:
                     world.set_block(get_looking_at(), hand_item)
             
+            elif event.type == pygame.KEYDOWN:
+                if event.key == Keybinds.place:
+                    world.set_block(get_looking_at(), hand_item)
+                elif event.key == Keybinds.remove:
+                    world.remove_block(get_looking_at())
+            
     
     keys = pygame.key.get_pressed()
     
@@ -224,6 +232,9 @@ def check_block_select(max_size):
         block_select_pos[1] = 0
     elif block_select_pos[1] >= max_size:
         block_select_pos[1] = max_size - 1
+    
+    if get_selected_block(block_select_pos[0], block_select_pos[1], max_size) >= len(registered_blocks):
+        block_select_pos = [0, 0] # if the selection is not over a block than just put it back at the start
 
 def get_selected_block(x, y, grid_size):
     return y*grid_size + x
@@ -269,6 +280,7 @@ while True:
                 if event.key == pygame.K_b:
                     if current_screen == Screens.block_select:
                         current_screen = Screens.ingame
+                        hand_item = tuple(registered_blocks.values())[get_selected_block(block_select_pos[0], block_select_pos[1], 6)]
                     else:
                         current_screen = Screens.block_select
                         block_select_pos = [0, 0]
