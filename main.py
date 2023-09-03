@@ -1,4 +1,4 @@
-import pygame, os, math, pickle
+import pygame, os, math, random
 
 pygame.init()
 
@@ -53,18 +53,22 @@ def get_looking_at():
     return pos
 
 class Block:
-    def __init__(self, display_name, local_name, texture):
+    def __init__(self, display_name, local_name, texture, is_solid = True):
         self.display_name = display_name
         self.local_name = local_name
         self.texture = texture
+        self.is_solid = is_solid
+    
+    def get_name(self):
+        return self.local_name
 
-def register_block(display_name, local_name, texture):
-    block_object = Block(display_name, local_name, texture)
+def register_block(display_name, local_name, texture, is_solid = True):
+    block_object = Block(display_name, local_name, texture,is_solid)
     registered_blocks[local_name] = block_object
     return block_object
 
 class Blocks:
-    blocks = {}
+    air_block = Block('Air', 'air', None, False)
     grass_block = register_block('Grass block', 'grass_block', get_texture('grass_block'))
     dirt_block = register_block('Dirt', 'dirt_block', get_texture('dirt'))
     stone_block = register_block('Stone', 'stone_block', get_texture('stone'))
@@ -72,6 +76,7 @@ class Blocks:
     iron_ore = register_block('Iron ore', 'iron_ore_block', get_texture('iron_ore'))
     coal_ore = register_block('Coal ore', 'coal_ore_block', get_texture('coal_ore'))
     spawner = register_block('Mob spawner', 'spawner_block', get_texture('mob_spawner'))
+    glass = register_block('Glass block', 'glass', get_texture('glass'), False)
 
 
 class World:
@@ -88,6 +93,33 @@ class World:
             del self.blocks[tuple(pos)]
         except:
             pass
+    
+    def _update_block(self, pos):
+        if self.get_block(pos) == Blocks.grass_block:
+            if self.get_block((pos[0], pos[1] - 1)).is_solid:
+                self.set_block(pos, Blocks.dirt_block)
+    
+    def _random_tick_block(self, pos):
+        if self.get_block(pos) == Blocks.dirt_block:
+            if not self.get_block((pos[0], pos[1] - 1)).is_solid:
+                self.set_block(pos, Blocks.grass_block)
+    
+    def random_tick_blocks(self, num):
+        for i in range(num):
+            x = random.randint(0, self.width) - self.width // 2
+            y = random.randint(0, self.height)
+            self._random_tick_block((x, y))
+            #print(f'random ticked {self.get_block((x, y)).get_name()}')
+    
+    def update_around(self, pos):
+        x = pos[0]
+        y = pos[1]
+
+        self._update_block((x, y))
+        self._update_block((x, y+1))
+        self._update_block((x, y-1))
+        self._update_block((x+1, y))
+        self._update_block((x-1, y))
     
     def gen_world(self):
         for y in range(self.height):
@@ -107,7 +139,7 @@ class World:
         try:
             return self.blocks[tuple(pos)]
         except:
-            return None
+            return Blocks.air_block
     
     def load_save(self, save_string : str):
         save = save_string.split()
@@ -119,6 +151,7 @@ class World:
             name = block_data[1] # 'grass_block'
             if not name in registered_blocks.keys():
                 print(f'An error occured registering {name} at {pos}')
+                continue
             try:
                 self.set_block(pos, registered_blocks[name])
             except:
@@ -146,6 +179,14 @@ def load_save(world : World, name : str):
     
     camera_offset = [int(player_info[0]), int(player_info[1])]
     world.load_save(save)
+
+def set_block(world : World, pos, block : Block):
+    world.set_block(pos, block)
+    world.update_around(pos)
+
+def remove_block(world : World, pos):
+    world.remove_block(pos)
+    world.update_around(pos)
 
 world = World()
 
@@ -196,16 +237,16 @@ def render_world(world, events, do_move = True):
     for event in events:
         if do_move:
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == Keybinds.remove:
-                    world.remove_block(get_looking_at())
-                elif event.button == Keybinds.place:
-                    world.set_block(get_looking_at(), hand_item)
+                if event.button == 1:
+                    remove_block(world, get_looking_at())
+                elif event.button == 3:
+                    set_block(world, get_looking_at(), hand_item)
             
             elif event.type == pygame.KEYDOWN:
                 if event.key == Keybinds.place:
-                    world.set_block(get_looking_at(), hand_item)
+                    set_block(world, get_looking_at(), hand_item)
                 elif event.key == Keybinds.remove:
-                    world.remove_block(get_looking_at())
+                    remove_block(world, get_looking_at())
             
     
     keys = pygame.key.get_pressed()
@@ -241,6 +282,7 @@ def get_selected_block(x, y, grid_size):
 
 while True:
     game_clock.tick(10)
+    world.random_tick_blocks(1)
     events = pygame.event.get()
 
     if current_screen == Screens.ingame:
