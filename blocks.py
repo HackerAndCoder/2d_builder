@@ -13,7 +13,7 @@ class Block:
         return self.local_name
 
 def register_block(display_name, local_name, texture, is_solid = True):
-    block_object = Block(display_name, local_name, texture,is_solid)
+    block_object = Block(display_name, local_name.lower(), texture,is_solid)
     registered_blocks[local_name] = block_object
     return block_object
 
@@ -26,5 +26,13 @@ class Blocks:
     iron_ore = register_block('Iron ore', 'iron_ore_block', get_texture('iron_ore'))
     coal_ore = register_block('Coal ore', 'coal_ore_block', get_texture('coal_ore'))
     spawner = register_block('Mob spawner', 'spawner_block', get_texture('mob_spawner'))
+    diamond_ore = register_block('Diamond ore', 'diamond_ore_block', get_texture('diamond_ore'))
+    diamond_block = register_block('Diamond Block', 'diamond_block', get_texture('diamond_block'))
+    gold_block = register_block('Gold Block', 'gold_block', get_texture('gold_block'))
+    iron_block = register_block('Iron Block', 'iron_block', get_texture('iron_block'))
+    sand = register_block('Sand', 'sand', get_texture('sand'))
+    bookshelf = register_block('Bookshelf', 'bookshelf', get_texture('bookshelf'))
+    bricks = register_block('Bricks', 'bricks', get_texture('brick'))
+    cactus = register_block('Cactus', 'cactus', get_texture('cactus'), False)
     glass = register_block('Glass block', 'glass', get_texture('glass'), False)
 

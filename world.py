@@ -20,6 +20,10 @@ class World:
         if self.get_block(pos) == Blocks.grass_block:
             if self.get_block((pos[0], pos[1] - 1)).is_solid:
                 self.set_block(pos, Blocks.dirt_block)
+        
+        if self.get_block(pos) == Blocks.cactus:
+            if self.get_block((pos[0], pos[1] + 1)) != Blocks.sand:
+                self.remove_block(pos)
     
     def _random_tick_block(self, pos):
         if self.get_block(pos) == Blocks.dirt_block:

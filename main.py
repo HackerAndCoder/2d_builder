@@ -1,4 +1,4 @@
-import pygame, math
+import pygame, math, button, os
 from world import *
 from utils import *
 from blocks import *
@@ -25,7 +25,7 @@ class Keybinds:
     move_up = pygame.K_w
     move_down = pygame.K_s 
     move_left = pygame.K_a 
-    move_right = pygame.K_d 
+    move_right = pygame.K_d
     remove = pygame.K_q # for both place and remove, you can remap the keyboard keys but mouse buttons 1 and 3 will always break and place without modifying the code
     place = pygame.K_e 
 
@@ -34,6 +34,10 @@ class Screens:
     title_screen = 1
     paused = 2
     block_select = 3
+
+class Buttons:
+    save_button = button.Button(200, 40, 'Save and quit')
+    back_to_game_button = button.Button(200, 40, 'Back to game')
 
 current_screen = Screens.ingame
 
@@ -54,12 +58,12 @@ def save_game(world : World, name : str):
     global camera_offset
     save = f'{camera_offset[0]},{camera_offset[1]}\n'
     save += world.get_save()
-    with open(name + '.dat', 'w') as f:
+    with open(os.path.join('saves', name + '.dat'), 'w') as f:
         f.write(save)
 
 def load_save(world : World, name : str):
     global camera_offset
-    with open(name + '.dat') as f:
+    with open(os.path.join('saves', name + '.dat')) as f:
         player_info = f.readline().strip().split(',')
         save = f.read()
     
@@ -83,11 +87,9 @@ except:
 
 game_clock = pygame.time.Clock()
 
-#hotbar_index = 0
-#hotbar = [Blocks.stone_block, None, None, None, None, None, None, None, None]
-#hotbar_image = pygame.transform.scale_by(pygame.image.load(os.path.join('assets', 'hotbar.png')).convert_alpha(), 3)
 hand_item = Blocks.stone_block
 pause_dimmer = pygame.Surface((width, height)); pause_dimmer.set_alpha(200); pause_dimmer.fill((0, 0, 0))
+
 
 def render_blocks(world):
     suface = pygame.Surface((width, height))
@@ -110,7 +112,7 @@ def render_world(world, events, do_move = True):
     pygame.draw.rect(screen, (0, 0, 0), pygame.Rect((width // 2) - (block_screen_size // 2), (height // 2) - (block_screen_size // 2), block_screen_size, block_screen_size), 3)
 
     try:
-        screen.blit(game_font.render(str(world.get_block(get_looking_at()).display_name) + f': {str(get_looking_at())} screen: {current_screen}', True, (0, 0, 0)), (10, 10))
+        screen.blit(game_font.render(str(world.get_block(get_looking_at()).display_name) + f': {str(get_looking_at())}', True, (0, 0, 0)), (10, 10))
         #print(world.get_block(get_looking_at()).name)
     except:
         pass # we must be looking at air so we will just skip the drawing
@@ -127,7 +129,7 @@ def render_world(world, events, do_move = True):
                     remove_block(world, get_looking_at())
                 elif event.button == 3:
                     set_block(world, get_looking_at(), hand_item)
-            
+                
             elif event.type == pygame.KEYDOWN:
                 if event.key == Keybinds.place:
                     set_block(world, get_looking_at(), hand_item)
@@ -170,6 +172,9 @@ while True:
     game_clock.tick(10)
     world.random_tick_blocks(1)
     events = pygame.event.get()
+    
+    if current_screen == Screens.title_screen:
+        screen.fill((100, 100, 100))
 
     if current_screen == Screens.ingame:
         screen.blit(render_world(world, events), (0, 0))
@@ -177,6 +182,14 @@ while True:
     elif current_screen == Screens.paused:
         screen.blit(render_world(world, events, False), (0, 0))
         screen.blit(pause_dimmer, (0, 0))
+        screen.blit(Buttons.save_button.get_render(), (width // 2 - Buttons.save_button.width // 2, height // 2 + 50))
+        screen.blit(Buttons.back_to_game_button.get_render(), (width // 2 - Buttons.back_to_game_button.width // 2, height // 2))
+        if Buttons.save_button.update(pygame.mouse.get_pos(), (width // 2 - Buttons.save_button.width // 2, height // 2 + 50), pygame.mouse.get_pressed()[0]):
+            save_game(world, 'save')
+            current_screen = Screens.title_screen
+        
+        elif Buttons.back_to_game_button.update(pygame.mouse.get_pos(), (width // 2 - Buttons.back_to_game_button.width // 2, height // 2), pygame.mouse.get_pressed()[0]):
+            current_screen = Screens.ingame
     
     elif current_screen == Screens.block_select:
         screen.blit(render_world(world, events, False), (0, 0))
