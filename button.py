@@ -4,6 +4,9 @@ pygame.init()
 
 text_font = pygame.font.Font(None, 25)
 
+def get_render_center(screen_width, screen_height, button):
+    return (screen_width // 2 - (button.width // 2), screen_height // 2 - (button.height // 2))
+
 class Button:
     def __init__(self, width, height, text):
         self.width = width

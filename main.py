@@ -38,8 +38,9 @@ class Screens:
 class Buttons:
     save_button = button.Button(200, 40, 'Save and quit')
     back_to_game_button = button.Button(200, 40, 'Back to game')
+    load_world_button = button.Button(200, 40, 'Load save')
 
-current_screen = Screens.ingame
+current_screen = Screens.title_screen
 
 def key_to_screen(key):
     return (key[0]*block_screen_size, key[1]*block_screen_size)
@@ -52,7 +53,6 @@ def get_looking_at():
     pos[0] += screen_dimensions_block[0] // 2
     pos[1] += screen_dimensions_block[1] // 2
     return pos
-
 
 def save_game(world : World, name : str):
     global camera_offset
@@ -169,12 +169,16 @@ def get_selected_block(x, y, grid_size):
     return y*grid_size + x
 
 while True:
-    game_clock.tick(10)
+    game_clock.tick(20)
     world.random_tick_blocks(1)
     events = pygame.event.get()
     
     if current_screen == Screens.title_screen:
         screen.fill((100, 100, 100))
+        screen.blit(Buttons.load_world_button.get_render(), button.get_render_center(width, height, Buttons.load_world_button))
+        if Buttons.load_world_button.update(pygame.mouse.get_pos(), button.get_render_center(width, height, Buttons.load_world_button), pygame.mouse.get_pressed()[0]):
+            load_save(world, 'save')
+            current_screen = Screens.ingame
 
     if current_screen == Screens.ingame:
         screen.blit(render_world(world, events), (0, 0))
